@@ -1,0 +1,24 @@
+<!-- @format -->
+
+to compile c and p programs, we can run this:
+p: p.c
+gcc -g p.c -o p
+
+c: c.c
+gcc -g c.c -o c
+
+In this assignment, I implemented a kernel-level pipe for exchanging strings among user-level processes.
+I learned about concurrency, synchronization, and various kernel primitives.
+
+I used the following kernel mechanisms.
+Memory allocation in kernel using kmalloc.
+Using semaphores in kernel using the following functions: sema_init, DEFINE_SEMAPHORE, down_interruptible.
+For alternative implementations using mutexes and waitqs: mutex_init, DEFINE_MUTEX, mutex_lock, mutex_unlock, init_wait_queue_head, wait_event_interruptible, and wake_up_interruptible.
+
+In user space, there are several concurrent processes that are consumers and producers of strings.
+Producers produce strings and write them to a character device.
+Consumers read the strings from the character device and print it on the screen.
+When the pipe is full, i.e. when there are N strings stored in character device, then any producer trying to write will block.
+When the pipe is empty, i.e. when there are 0 strings stored in character device, then any consumer trying to read will block.
+When a consumer reads from a (full) pipe, it wakes up all blocked producers. In this case, no blocked consumer should be woken up.
+When a producer writes to a (empty) pipe, it wakes up all blocked consumers. In this case, no blocked producer should be woken up.
